@@ -2,33 +2,51 @@ const gallery = document.querySelector('.gallery');
 const containerFiltre = document.querySelector('#portfolio');
 const login = document.getElementById("login");
 const body = document.querySelector('body'); // pour la fonction createModale
+let works = [];
+let categories = [];
 
 
-////////////! A changer//////////////
-
-function createGallery () {
-        
-  for(let i= 0; i<11; i++){
-    const divFigure = document.createElement('figure');
-    gallery.appendChild(divFigure);
-      
-    const img = document.createElement('img');
-    divFigure.appendChild(img);
-
-    const title = document.createElement("p");
-    divFigure.appendChild(title);
-
-    const url = "http://localhost:5678/api/works";
-            
-    fetch (url)
-    .then(response => response.json())
-    .then(data => {
-      img.src = data[i].imageUrl;
-      title.textContent = data[i].title;         
-    })
-  }
+function WorksImport() {
+  fetch("http://localhost:5678/api/works")
+      .then((res) => res.json())
+      .then((data) => {
+          works = data;
+          generateWorks(works);
+          
+      });
 }
+WorksImport();
 
+
+function categoriesImport() {
+  fetch("http://localhost:5678/api/categories")
+      .then((res) => res.json())
+      .then((data) => {
+          categories = data; console.log(data);
+      });
+}
+categoriesImport();
+
+
+function generateWorks(worksArray) {
+  gallery.innerHTML = "";
+
+  worksArray.forEach((work) => {
+      const figure = document.createElement("figure");
+      gallery.appendChild(figure);
+      figure.classList = work.category.name;
+      figure.setAttribute("data-id", work.id);
+
+      const img = document.createElement("img");
+      img.src = work.imageUrl;
+      img.alt = work.title;
+      figure.appendChild(img);
+
+      const figcaption = document.createElement("figcaption");
+      figcaption.innerHTML = work.title;
+      figure.appendChild(figcaption);
+  });
+}
 
 function createFilter() {
 
@@ -61,7 +79,7 @@ function createFilter() {
 
   const liHotels= document.createElement("li"); 
   liHotels.classList.add('hotels-and-restaurants');
-  liHotels.textContent = 'Hôtels & restaurants' 
+  liHotels.textContent = 'Hotels & restaurants' 
   unList.appendChild(liHotels);
 
   // placement dans le DOM
@@ -76,177 +94,37 @@ function createFilter() {
 createFilter()
 
 
-// creation d'une fonction pour supprimer les enfants (figure) au clic des filtres
-function clearGallery() {
-  while (gallery.firstChild) {
-    gallery.firstChild.remove(); 
-  }
-}
+function worksFilter() {
+  const filters = document.querySelectorAll(".ulFiltres li")
+  filters.forEach((filter) => {
+      const filterValue = filter.textContent;
 
+      
+      filter.addEventListener("click", () => {
+        filters.forEach(li => {
+        li.style.background = "transparent";
+        li.style.color = "initial"
+      });
 
-////////////! A changer//////////////
-
-// Fonction pour images objets
-function fetchObjets() {
-
-  fetch('http://localhost:5678/api/works')
-  .then(response => response.json())
-  .then(data => {
-    const filteredObjects = data.filter(data => {
-      return data.category.name === 'Objets'; 
-    });
-  
-    // ajout des images filtrés objets avec addEventListener et condition
-    const objects = document.querySelector(".objects");
-        
-    objects.addEventListener('click', () => {
-      // appel de la fonction pour suprimer galerie
-      clearGallery(); 
-
-      let imagesAdded = false;
-            
-      if (!imagesAdded) {
-
-        filteredObjects.forEach(objets => {
-          const figure = document.createElement('figure');
-          gallery.appendChild(figure);
-                    
-          const img = document.createElement('img');
-          figure.appendChild(img);
+      filter.style.background = "#1D6154"; // Change the background color of the clicked li
+      filter.style.color = "white"; 
+          let filteredWorks = [];
+          if (filterValue === "Tous") {
+              filteredWorks = works;
               
-          const title = document.createElement("p");
-          figure.appendChild(title);
-                                  
-          img.src = objets.imageUrl;
-          title.textContent = objets.title;
-
-        });
-        imagesAdded = true;             
-      }
-    });      
-  }) 
-  .catch(error => {
-    console.error('Erreur lors de la récupération des données de l\'API :', error);
-  });
-      
-}
-
-
-////////////! A changer//////////////
-
-// Fonction pour images appartements
-function fetchAppt() {
-    
-  fetch('http://localhost:5678/api/works')
-  .then(response => response.json())
-  .then(data => {   
-    const filteredAppartements = data.filter(data => {
-      return data.category.name === 'Appartements'; 
-    }); 
-  
-    const Appartements = document.querySelector(".appartements");
-    
-    Appartements.addEventListener('click', () => {
-            
-      clearGallery();
-
-      let imagesAdded = false;  
-          
-      if (!imagesAdded) {
-        filteredAppartements.forEach(appartements => {
-          const figure = document.createElement('figure');
-          gallery.appendChild(figure);
-                    
-          const img = document.createElement('img');
-          figure.appendChild(img);
-              
-          const title = document.createElement("p");
-          figure.appendChild(title);
-                                  
-          img.src = appartements.imageUrl;
-          title.textContent = appartements.title;             
-        });  
-        imagesAdded = true;
-      }      
-    });
-  })
-  .catch(error => { 
-    console.error('Erreur lors de la récupération des données de l\'API :', error);
-  });
-      
-}
-
-
-////////////! A changer//////////////
-
-// Fonction pour images hotels
-function fetchHotel() {
-  
-  fetch('http://localhost:5678/api/works')
-  .then(response => response.json())
-  .then(data => {
-    const filteredHotels = data.filter(data => {
-      return data.category.name === 'Hotels & restaurants';
-    });
-      
-    const Hotels = document.querySelector(".hotels-and-restaurants");
-      
-    Hotels.addEventListener('click', () => {
-
-      clearGallery();
-
-      let imagesAdded = false;
-
-      if (!imagesAdded) {
-        filteredHotels.forEach(hotel => {
-          const figure = document.createElement('figure');
-          gallery.appendChild(figure);
-
-          const img = document.createElement('img');
-          figure.appendChild(img);
-
-          const title = document.createElement("p");
-          figure.appendChild(title);
-
-          img.src = hotel.imageUrl;
-          title.textContent = hotel.title;
-        });
-
-        imagesAdded = true;
-      }
-    });
-  })
-  .catch(error => {
-    console.error('Erreur lors de la récupération des données de l\'API :', error);
+          } else {
+              filteredWorks = works.filter(
+                  (work) => work.category.name === filterValue,
+                  
+              );
+          }
+          generateWorks(filteredWorks);
+      });
   });
 }
+worksFilter();
 
-
-////////////! A changer//////////////
-
-// Fonction pour images tous
-function fetchAll() {
-
-  const all = document.querySelector(".all");
-    
-  all.addEventListener('click', () => {
-            
-    clearGallery();
-
-    let imagesAdded = false;
-            
-    if (!imagesAdded) {
-            
-      createGallery ()      
-  
-      imagesAdded = true; 
-            
-    }
-          
-  });    
-      
-}
-
+//!!!!!!!!!!!!!!!!!!!!!!! partie connection session//!!!!!!!!!!!!!!!!!!!!!
 
 function logIn(){
   login.addEventListener("click", () => {
@@ -254,9 +132,25 @@ function logIn(){
   });
 }
 
+const filters = document.querySelector('.filtres');
+  
+  if (sessionStorage.getItem('token')) {
+    // User is logged in, so remove filters and change login to logout
+    filters.remove();
+    login.textContent = 'logout';
+    createModif()
+    createBlackHeader()
+
+    // deconnection de la session
+    login.addEventListener("click", () => {
+      localStorage.removeItem("token")
+      
+  })
+  }
+
 
 function removeFilters() {
-  const shouldRemove = localStorage.getItem('removeFilters');
+  const shouldRemove = sessionStorage.getItem('removeFilters');
 
   if (shouldRemove === 'true') {
     const filtersDiv = document.querySelector('.filtres ul'); console.log(filtersDiv);
@@ -264,14 +158,14 @@ function removeFilters() {
       filtersDiv.remove();
     }
 
-    localStorage.removeItem('removeFilters');
+    sessionStorage.removeItem('removeFilters');
 
   }
 }
 
 
 function removeLogin() {
-  const logindRemove = localStorage.getItem('removeLogin');
+  const logindRemove = sessionStorage.getItem('removeLogin');
   if (logindRemove === 'true') {
 
     const deletLogin = document.querySelector('#login'); console.log(deletLogin);
@@ -282,14 +176,16 @@ function removeLogin() {
       deletLogin.style.paddingLeft = '0px'
     }
 
-    localStorage.removeItem('removeLogin');
-
+    sessionStorage.removeItem('removeLogin');
+    
   }
 }
 
 
 function createBlackHeader() {
-  const divOfBlackHeader = document.createElement('div'); 
+  const divOfBlackHeader = document.createElement('div');
+  divOfBlackHeader.classList.add('black-header'); console.log(divOfBlackHeader);
+
   // Ajout de styles à la div
   divOfBlackHeader.style.backgroundColor = 'black';
   divOfBlackHeader.style.width = '1440px';
@@ -347,19 +243,16 @@ function createBlackHeader() {
 
 }
 
-
-// Vérifier si la redirection vers la session storage a eu lieu
-const redirected = localStorage.getItem('redirected');
+const redirected = sessionStorage.getItem('createBlackHeader');
   
 if (redirected === 'true') {
   // Appel de la fonction pour créer la div personnalisée
   createBlackHeader();
   
-  // Supprimer la clé 'redirected' de la session storage
-  localStorage.removeItem('redirected');
+  sessionStorage.removeItem('createBlackHeader');
+  
 
 }
-
 
 //Création de "Mofifier" pour modal
 function createModif() {
@@ -399,17 +292,16 @@ function createModif() {
 }
 
 
-const modifMesProjets = sessionStorage.getItem('modifMesProjets');
+const modifMesProjets = sessionStorage.getItem('createModif');
 
 if (modifMesProjets === 'true') {
   // Appel de la fonction pour créer la div personnalisée
   createModif();
   
   // Suppression la clé 'redirected' de la session storage
-  sessionStorage.removeItem('modifMesProjets');
+  sessionStorage.removeItem('createModif');
 
 }
-
 
 // Creation de la modal
 
@@ -917,11 +809,11 @@ function modalActive (){
   })
 }
 
-createGallery()
-fetchObjets()
-fetchAppt()
-fetchHotel()
-fetchAll()
+// createGallery()
+// fetchObjets()
+// fetchAppt()
+// fetchHotel()
+// fetchAll()
 logIn()
 removeFilters()
 removeLogin()
