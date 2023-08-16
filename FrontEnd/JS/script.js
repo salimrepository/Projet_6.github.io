@@ -143,7 +143,7 @@ const filters = document.querySelector('.filtres');
 
     // deconnection de la session
     login.addEventListener("click", () => {
-      localStorage.removeItem("token")
+      sessionStorage.removeItem("token")
       
   })
   }
