@@ -6,6 +6,11 @@ let works = [];
 let categories = [];
 
 
+/**
+ * Fetches data from the specified API endpoint and generates works based on the received data.
+ *
+ * @return {void} This function does not return anything.
+ */
 function WorksImport() {
   fetch("http://localhost:5678/api/works")
       .then((res) => res.json())
@@ -131,43 +136,39 @@ function logIn(){
     window.location.href = 'login.html';
   });
 }
+logIn()
 
-const filters = document.querySelector('.filtres');
   
   if (sessionStorage.getItem('token')) {
     // User is logged in, so remove filters and change login to logout
-    filters.remove();
-    login.textContent = 'logout';
-    createModif()
     createBlackHeader()
+    removeLogin();
+    removeFiltersLoggedIn()
+    createModif()
 
     // deconnection de la session
-    login.addEventListener("click", () => {
+    const logout = document.querySelector(".logout")
+    logout.addEventListener("click", () => {
       sessionStorage.removeItem("token")
-      
+      window.location.href = "index.html"
   })
   }
 
 
-function removeFilters() {
-  const shouldRemove = sessionStorage.getItem('removeFilters');
-
-  if (shouldRemove === 'true') {
-    const filtersDiv = document.querySelector('.filtres ul'); console.log(filtersDiv);
-    if (filtersDiv) {
-      filtersDiv.remove();
+  function removeFilters() {
+    const filterContainer = document.querySelector(".filtres");
+    if (filterContainer) {
+      filterContainer.remove();
     }
-
-    sessionStorage.removeItem('removeFilters');
-
   }
-}
+  
+  function removeFiltersLoggedIn() {
+    removeFilters();
+  }
 
 
+//fonction pour remplacer 'login' par 'logout'
 function removeLogin() {
-  const logindRemove = sessionStorage.getItem('removeLogin');
-  if (logindRemove === 'true') {
-
     const deletLogin = document.querySelector('#login'); console.log(deletLogin);
 
     if (deletLogin) {
@@ -175,13 +176,9 @@ function removeLogin() {
       deletLogin.style.fontSize = '14px'
       deletLogin.style.paddingLeft = '0px'
     }
-
-    sessionStorage.removeItem('removeLogin');
-    
   }
-}
 
-
+//fonction pour creer le header noir
 function createBlackHeader() {
   const divOfBlackHeader = document.createElement('div');
   divOfBlackHeader.classList.add('black-header'); console.log(divOfBlackHeader);
@@ -243,16 +240,6 @@ function createBlackHeader() {
 
 }
 
-const redirected = sessionStorage.getItem('createBlackHeader');
-  
-if (redirected === 'true') {
-  // Appel de la fonction pour créer la div personnalisée
-  createBlackHeader();
-  
-  sessionStorage.removeItem('createBlackHeader');
-  
-
-}
 
 //Création de "Mofifier" pour modal
 function createModif() {
@@ -291,17 +278,6 @@ function createModif() {
   
 }
 
-
-const modifMesProjets = sessionStorage.getItem('createModif');
-
-if (modifMesProjets === 'true') {
-  // Appel de la fonction pour créer la div personnalisée
-  createModif();
-  
-  // Suppression la clé 'redirected' de la session storage
-  sessionStorage.removeItem('createModif');
-
-}
 
 // Creation de la modal
 
@@ -345,68 +321,7 @@ function createModale (){
   divContainerFigure.style.marginTop = "50px"
 
   // partie API avec ajout icone poubelle et style
-  for(let i= 0; i<11; i++){
-    
-    const Figure = document.createElement('figure');
-    divContainerFigure.appendChild(Figure);
-
-    const img = document.createElement('img');
-    img.style.width = '117px'
-    img.style.height = '142px'
-    
-    Figure.appendChild(img);
-
-    const iconGarbage = document.createElement('i');
-    iconGarbage.classList.add ('fa-solid', 'fa-trash-can');
-
-    Figure.style.position = ('relative')
-    iconGarbage.style.position = ('absolute')
-    iconGarbage.style.right = ('10px')
-    iconGarbage.style.top = ('10px')
-    iconGarbage.style.color = ('#ffffff')
-    iconGarbage.style.padding = ('7px')
-    iconGarbage.style.backgroundColor = ('black')
-    iconGarbage.style.borderRadius = ('5px')
-
-    Figure.appendChild(iconGarbage)
-
-    // partie texte 'éditer'
-    const editContainer = document.createElement('div');
-    editContainer.classList.add('edit')
-    Figure.appendChild(editContainer)
-
-    editContainer.innerHTML = "<p>éditer</p>"
-
-    // partie API pour ajout icone flèche sur 1er image et style
-    const url = "http://localhost:5678/api/works"; 
-    
-    fetch (url)
-    .then(response => response.json())
-    .then(data => {
-      img.src = data[i].imageUrl;
-      if (i === 0) {
-        const arrowIcon = document.createElement('div');
-        arrowIcon.classList.add ('fa-solid', 'fa-arrows-up-down-left-right');
-        arrowIcon.style.position = ('absolute')
-        arrowIcon.style.right = ('40px')
-        arrowIcon.style.top = ('10px')
-        arrowIcon.style.color = ('#ffffff')
-        arrowIcon.style.padding = ('7px')
-        arrowIcon.style.backgroundColor = ('black')
-        arrowIcon.style.borderRadius = ('5px')
-        Figure.appendChild(arrowIcon);
-
-      }   
-            
-      iconGarbage.addEventListener('click', () => {
-        divContainerFigure.removeChild(Figure);
-          
-        const figure = document.querySelector('.gallery figure'); console.log(figure);
-        figure.remove()
-
-      });       
-    })
-  } 
+  
 
   modal.appendChild(document.createElement('hr'))
   const hr = document.querySelector('hr')
@@ -461,10 +376,81 @@ function createModale (){
   backbody.style.background = 'rgba(51, 51, 51, 0.5)'
   backbody.style.opacity = '1'
 
+
+  works.forEach((work, index) => {
+    
+    const figure = document.createElement("figure");
+    divContainerFigure.appendChild(figure);
+
+    const img = document.createElement("img");
+    img.style.width = '117px'
+    img.style.height = '150px'
+    img.src = work.imageUrl;
+    img.alt = work.title;
+    figure.appendChild(img);
+
+    const iconGarbage = document.createElement('i');
+    iconGarbage.classList.add ('fa-solid', 'fa-trash-can');
+
+    //appel de la fonction pour supprimer l'image de la modale et de work
+    iconGarbage.addEventListener('click', () => {
+      const workId = work.id;
+      removeImage(figure, workId);
+  });
+
+    figure.style.position = ('relative')
+    iconGarbage.style.position = ('absolute')
+    iconGarbage.style.right = ('10px')
+    iconGarbage.style.top = ('10px')
+    iconGarbage.style.color = ('#ffffff')
+    iconGarbage.style.padding = ('7px')
+    iconGarbage.style.backgroundColor = ('black')
+    iconGarbage.style.borderRadius = ('5px')
+
+    figure.appendChild(iconGarbage)
+
+    // partie texte 'éditer'
+    const editContainer = document.createElement('div');
+    editContainer.classList.add('edit')
+    figure.appendChild(editContainer)
+
+    editContainer.innerHTML = "<p>éditer</p>"
+    
+    //ajout icone fleche sur la premiere image
+
+    if (index === 0) {
+      const arrowIcon = document.createElement('div');
+        arrowIcon.classList.add ('fa-solid', 'fa-arrows-up-down-left-right');
+        arrowIcon.style.position = ('absolute')
+        arrowIcon.style.right = ('40px')
+        arrowIcon.style.top = ('10px')
+        arrowIcon.style.color = ('#ffffff')
+        arrowIcon.style.padding = ('7px')
+        arrowIcon.style.backgroundColor = ('black')
+        arrowIcon.style.borderRadius = ('5px')
+        figure.appendChild(arrowIcon);
+  }
+  });
   // appel fonction fermeture de la modale 
   closeModal()
 
 } 
+
+
+//fonction pour supprimer l'image de la modale et de work
+function removeImage(figure, workId) {
+  containerFigure = document.querySelector('.figureContainer');
+  containerFigure.removeChild(figure); // Supprimez la figure contenant l'image et l'icône de la modale
+
+  // Supprimez l'élément correspondant de la galerie (utilisez l'attribut data-id pour identifier l'image)
+  const galleryImageToRemove = document.querySelector(`.gallery figure[data-id="${workId}"]`);
+  if (galleryImageToRemove) {
+      galleryImageToRemove.parentNode.removeChild(galleryImageToRemove);
+  }
+  
+}
+
+
 
 
 function closeModal() {
@@ -535,8 +521,8 @@ function modalSecond (){
     form.style.marginTop = "40px"
     form.style.display = "flex"
     form.style.flexDirection = "column"
-    form.method = 'post'
-    form.action = '/works'
+    // form.method = 'post'
+    // form.action = '/works'
 
     // Champ de fichier
     const fileLabel = document.createElement('label');
@@ -737,10 +723,10 @@ function modalSecond (){
     formulaire.addEventListener('submit', (event) => {
       event.preventDefault(); 
 
-      // Get form data
 
-      const formData = new FormData(formulaire);
+      const formData = new FormData(formulaire); console.log(formData);
 
+      formData.append("image", fileInput.files[0]);
       formData.append("title", text1Input.value);
       formData.append("category", select.value);
 
@@ -748,18 +734,15 @@ function modalSecond (){
         method : "POST",
         body: formData,
         headers: {
+          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY5MjU0NjgwNiwiZXhwIjoxNjkyNjMzMjA2fQ.naisi-RHS-x7p18Uqzs9EG6WvU8rHMsPSVj_Gy58y1s'
+        }
+        
+      })
+      .then(response => response.json())
+      .then((data) => console.log(data))
+        
       
-          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY1MTg3NDkzOSwiZXhwIjoxNjUxOTYxMzM5fQ.JGN1p8YIfR-M-5eQ-Ypy6Ima5cKA4VbfL2xMr2MgHm4'
-        }, 
-      })
-      .then(res => {
-        if (!res.ok) {
-          console.log(formData);
-        } 
-        return res.json();
-      })
-      .then(res => console.log(res))
-      .catch(error => console.error('Error fetching data:', error));
+      
     });
 
     retour()
@@ -810,11 +793,6 @@ function modalActive (){
 }
 
 // createGallery()
-// fetchObjets()
-// fetchAppt()
-// fetchHotel()
-// fetchAll()
-logIn()
-removeFilters()
-removeLogin()
+// removeFilters()
+// removeLogin()
 modalActive()
