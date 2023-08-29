@@ -22,7 +22,7 @@
   
         if (response.ok) {
           const responseData = await response.json();
-          sessionStorage.setItem("token", responseData.token); // Store token in localStorage
+          localStorage.setItem("token", responseData.token); // Store token in localStorage
           window.location.href = "index.html"; // Redirect to index.html after login
           
         } else {

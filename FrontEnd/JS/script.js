@@ -4,7 +4,7 @@ const login = document.getElementById("login");
 const body = document.querySelector('body'); // pour la fonction createModale
 let works = [];
 let categories = [];
-
+let token = localStorage.getItem("token");
 
 /**
  * Fetches data from the specified API endpoint and generates works based on the received data.
@@ -139,7 +139,7 @@ function logIn(){
 logIn()
 
   
-  if (sessionStorage.getItem('token')) {
+  if (localStorage.getItem('token')) {
     // User is logged in, so remove filters and change login to logout
     createBlackHeader()
     removeLogin();
@@ -149,7 +149,7 @@ logIn()
     // deconnection de la session
     const logout = document.querySelector(".logout")
     logout.addEventListener("click", () => {
-      sessionStorage.removeItem("token")
+      localStorage.removeItem("token")
       window.location.href = "index.html"
   })
   }
@@ -392,11 +392,7 @@ function createModale (){
     const iconGarbage = document.createElement('i');
     iconGarbage.classList.add ('fa-solid', 'fa-trash-can');
 
-    //appel de la fonction pour supprimer l'image de la modale et de work
-    iconGarbage.addEventListener('click', () => {
-      const workId = work.id;
-      removeImage(figure, workId);
-  });
+   
 
     figure.style.position = ('relative')
     iconGarbage.style.position = ('absolute')
@@ -408,6 +404,11 @@ function createModale (){
     iconGarbage.style.borderRadius = ('5px')
 
     figure.appendChild(iconGarbage)
+
+    iconGarbage.addEventListener('click', (event) => {
+      event.preventDefault(); 
+      deleteWork(index)
+    })
 
     // partie texte 'éditer'
     const editContainer = document.createElement('div');
@@ -438,16 +439,22 @@ function createModale (){
 
 
 //fonction pour supprimer l'image de la modale et de work
-function removeImage(figure, workId) {
-  containerFigure = document.querySelector('.figureContainer');
-  containerFigure.removeChild(figure); // Supprimez la figure contenant l'image et l'icône de la modale
 
-  // Supprimez l'élément correspondant de la galerie (utilisez l'attribut data-id pour identifier l'image)
-  const galleryImageToRemove = document.querySelector(`.gallery figure[data-id="${workId}"]`);
-  if (galleryImageToRemove) {
-      galleryImageToRemove.parentNode.removeChild(galleryImageToRemove);
-  }
-  
+function deleteWork(id) {
+  fetch(`http://localhost:5678/api/works/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      // Effectuer des actions supplémentaires si nécessaire après la suppression
+    })
+    .catch(error => {
+      console.error('Une erreur s\'est produite lors de la suppression :', error);
+    });
 }
 
 
@@ -590,19 +597,19 @@ function modalSecond (){
     const option1 = document.createElement('option')
     select.appendChild(option1)
     option1.id = 'op1'
-    option1.value = 'Objets'
+    option1.value = 1
     option1.textContent = 'Objets'
 
     const option2 = document.createElement('option')
     select.appendChild(option2)
     option2.id = 'op2'
-    option2.value = 'Appartements'
+    option2.value = 2
     option2.textContent = 'Appartements'
 
     const option3 = document.createElement('option')
     select.appendChild(option3)
     option3.id = 'op3'
-    option3.value = 'Hotels & restaurants'
+    option3.value = 3
     option3.textContent = 'Hotels & restaurants'
 
 
@@ -683,7 +690,7 @@ function modalSecond (){
         previewImage.src = imageSrc;
       
         previewImage.style.marginTop = '-21px';
-        previewImage.style.marginLeft = '-135px';
+        previewImage.style.marginLeft = '-130px';
 
         const existingIcon = document.querySelector('.fa-sharp');
         if (existingIcon) {
@@ -719,36 +726,37 @@ function modalSecond (){
     })
   
     ////////////! A changer//////////////
-    const formulaire = document.getElementById('form'); console.log(formulaire);
-    formulaire.addEventListener('submit', (event) => {
-      event.preventDefault(); 
+    function createWork() {
+      submitButton.addEventListener('click', (event) => {
+        event.preventDefault(); 
 
+        const formData = new FormData(); console.log(formData);
 
-      const formData = new FormData(formulaire); console.log(formData);
+        formData.append("image", fileInput.files[0]);
+        formData.append("title", text1Input.value);
+        formData.append("category", select.value);
 
-      formData.append("image", fileInput.files[0]);
-      formData.append("title", text1Input.value);
-      formData.append("category", select.value);
+        fetch('http://localhost:5678/api/works',{
+          method : "POST",
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+        .then(response => response.json())
+        .then((data) => console.log(data))
+      });
+    }
 
-      fetch('http://localhost:5678/api/works',{
-        method : "POST",
-        body: formData,
-        headers: {
-          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY5MjU0NjgwNiwiZXhwIjoxNjkyNjMzMjA2fQ.naisi-RHS-x7p18Uqzs9EG6WvU8rHMsPSVj_Gy58y1s'
-        }
-        
-      })
-      .then(response => response.json())
-      .then((data) => console.log(data))
-        
-      
-      
-    });
-
+    createWork();
     retour()
 
   })
 } 
+
+const gallerie = document.querySelector('.gallery'); console.log(gallerie);
+const img = gallerie.lastElementChild; console.log(img);
+
 
 // fleche retour vers modale1
   
